@@ -10,7 +10,8 @@ Linux driver for 2E DD series ups, using pyusb
 ## Installation
 need to install pyusb libs
 ```sh
-pip install -r requirements.txt
+# because its need to run under root, so here install also need to install to root
+sudo pip install -r requirements.txt
 ```
 
 ## Run
