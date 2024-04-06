@@ -31,19 +31,18 @@ def get_device():
 def get_status(device):
   bmRequestType = 0x80
   bRequest = 0x06
-  wIndex = 0x03
-  wValue = 0x0
-  langid = 0x0409
+  wValue = 0x03  # 高字节为描述符类型（0x03），低字节为描述符索引（0x01）
+  wIndex = 0x0409  # Language ID，这里是美国英语
+  data_or_wLength = 0x18  # 假定的最大长度
   ret = device.ctrl_transfer(
-                  bmRequestType,
-                  bRequest,
-                  wValue =wValue,
+                  bmRequestType = bmRequestType,
+                  bRequest = bRequest,
+                  wValue = wValue,
                   wIndex = wIndex,
-                  data_or_wLength = 0x66,
-                  timeout = 1000)
+                  data_or_wLength = data_or_wLength)
 
   # print(ret)
-  res = usb.util.get_string(device, wIndex, langid)[1:].split(' ')
+  res = usb.util.get_string(device, wValue, wIndex)[1:].split(' ')
   battery_level = get_battery_level(device)
   return {
     "input.voltage": float(res[0]),
@@ -67,19 +66,18 @@ def get_status(device):
 def get_battery_level(device):
   bmRequestType = 0x80
   bRequest = 0x06
-  wIndex = 0xf3
-  wValue = 0x0
-  langid = 0x0409
+  wValue = 0x03f3
+  wIndex = 0x0409
+  data_or_wLength = 0x66
   ret = device.ctrl_transfer(
                   bmRequestType,
                   bRequest,
                   wValue =wValue,
                   wIndex = wIndex,
-                  data_or_wLength = 0x09,
-                  timeout = 1000)
+                  data_or_wLength = data_or_wLength)
 
   # print(ret)
-  res = usb.util.get_string(device, wIndex, langid)
+  res = usb.util.get_string(device, wValue, wIndex)
   res = float(res.replace('BL', ''))
   return res
 
