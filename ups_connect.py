@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
-import sys, os
+import sys, os, platform
 import usb.core
 import usb.util
 import usb.control
+import usb.backend.libusb1
+import sys, os, time
 
 VENDOR_ID = 0x0001
 PRODUCT_ID = 0x0000
+
+if platform.system() == 'Windows':
+  import sys
+  sys.exit("Windows is not supported")
 
 if os.geteuid() != 0:
   print("You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
   sys.exit()
 
 def get_device():
-  device = usb.core.find(idVendor=VENDOR_ID, idProduct=PRODUCT_ID)
+  backend = usb.backend.libusb1.get_backend()
+  device = usb.core.find(idVendor=VENDOR_ID, idProduct=PRODUCT_ID, backend=backend)
 
   if device is None:
-      raise ValueError('Device not found')
+    sys.exit('UPS Device not found')
 
   # Detach the device from the kernel driver, if necessary
   if device.is_kernel_driver_active(0):
@@ -28,21 +35,41 @@ def get_device():
   device.set_configuration()
   return device
 
-def get_status(device):
-  bmRequestType = 0x80
-  bRequest = 0x06
-  wValue = 0x03  # 高字节为描述符类型（0x03），低字节为描述符索引（0x01）
-  wIndex = 0x0409  # Language ID，这里是美国英语
-  data_or_wLength = 0x18  # 假定的最大长度
+def get_string(ret):
+  # Combine the hex values into a single string
+  hex_list = [format(x, '02x') for x in ret]
+  hex_str = ''.join(hex_list)
+  bytes_obj = bytes.fromhex(hex_str)
+  string = bytes_obj.decode('utf-16le').strip()[1:]
+  return string
+
+def _run_cmd(device, cmd):
+  bmRequestType = cmd[0]
+  bRequest = cmd[1]
+  wValue = cmd[2]
+  wIndex = cmd[3]
+  data_or_wLength = cmd[4]
   ret = device.ctrl_transfer(
                   bmRequestType = bmRequestType,
                   bRequest = bRequest,
                   wValue = wValue,
                   wIndex = wIndex,
                   data_or_wLength = data_or_wLength)
+  time.sleep(0.5)
+  return get_string(ret)
 
-  # print(ret)
-  res = usb.util.get_string(device, wValue, wIndex)[1:].split(' ')
+def init_device(device):
+  cmd_lists = [
+    [0x80, 0x06, 0x0300, 0x0000, 0x0066],
+    [0x80, 0x06, 0x0301, 0x0409, 0x0066],
+  ]
+  for cmd in cmd_lists:
+    r = _run_cmd(device, cmd)
+  return
+
+def get_status(device):
+  res = _run_cmd(device, [0x80, 0x06, 0x0303, 0x0409, 0x0066])
+  res = res[1:].split(' ')
   battery_level = get_battery_level(device)
   return {
     "input.voltage": float(res[0]),
@@ -64,50 +91,22 @@ def get_status(device):
   }
 
 def get_battery_level(device):
-  bmRequestType = 0x80
-  bRequest = 0x06
-  wValue = 0x03f3
-  wIndex = 0x0409
-  data_or_wLength = 0x66
-  ret = device.ctrl_transfer(
-                  bmRequestType,
-                  bRequest,
-                  wValue =wValue,
-                  wIndex = wIndex,
-                  data_or_wLength = data_or_wLength)
-
-  # print(ret)
-  res = usb.util.get_string(device, wValue, wIndex)
+  res = _run_cmd(device,[0x80, 0x06, 0x03f3, 0x0409, 0x0066])
   res = float(res.replace('BL', ''))
   return res
 
 def ups_test(device):
-  bmRequestType = 0x80
-  bRequest = 0x06
-  wIndex = 0x04
-  wValue = 0x0
-  langid = 0x0409
-  ret = device.ctrl_transfer(
-                  bmRequestType,
-                  bRequest,
-                  wValue =wValue,
-                  wIndex = wIndex,
-                  data_or_wLength = 0x66,
-                  timeout = 1000)
-
-  # print(ret)
-  # time.sleep(1)
-  try:
-    usb.util.get_string(device, wIndex, langid)
-  except Exception as e:
-    pass
-  return True
+  res = _run_cmd(device,[0x80, 0x06, 0x0304, 0x0409, 0x0066])
+  print(res)
+  return res
 
 if __name__ == '__main__':
+  import time
   dev = get_device()
+  # init_device(dev)
   status = get_status(dev)
   for k, v in status.items():
-    print(f'{k}: {v}')
+      print(f'{k}: {v}')
 
   # res = ups_test(dev)
   # print(f'ups test res: {res}')
