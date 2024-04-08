@@ -70,6 +70,12 @@ def init_device(device):
 def get_status(device):
   res = _run_cmd(device, [0x80, 0x06, 0x0303, 0x0409, 0x0066])
   res = res[1:].split(' ')
+
+  while float(res[0]) == 0.0:
+    res = _run_cmd(device, [0x80, 0x06, 0x0303, 0x0409, 0x0066])
+    res = res[1:].split(' ')
+    time.sleep(1)
+
   battery_level = get_battery_level(device)
   # return {
   #   "input.voltage": float(res[0]),
