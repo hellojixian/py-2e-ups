@@ -1,1 +1,4 @@
 pyusb==1.2.1
+prometheus-client
+yaml_settings_pydantic
+apscheduler

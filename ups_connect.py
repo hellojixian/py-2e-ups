@@ -71,6 +71,24 @@ def get_status(device):
   res = _run_cmd(device, [0x80, 0x06, 0x0303, 0x0409, 0x0066])
   res = res[1:].split(' ')
   battery_level = get_battery_level(device)
+  # return {
+  #   "input.voltage": float(res[0]),
+  #   "input.voltage_fault": float(res[1]),
+  #   "input.freqency": float(res[4]),
+  #   "output.voltage": float(res[2]),
+  #   "battery.voltage": float(res[5]),
+  #   "battery.level": float(battery_level),
+  #   "ups.load": float(res[3]),
+  #   "ups.temperature": res[6],
+  #   "ups.utility_fail": int(res[7][0]) == 1,  # 外部供电是否中断是
+  #   "ups.battery_low": int(res[7][1]) == 1,   # 电池是否低电压 快没电了
+  #   "ups.bypass": int(res[7][2]) == 0,        # 是否处于旁路模式
+  #   "ups.failed": int(res[7][3]) == 1,
+  #   "ups.type": int(res[7][4]) == 1,          # 好像永远是1
+  #   "ups.test_in_progress": int(res[7][5]) == 1, # 是否正在测试中
+  #   "ups.shutdown_active": int(res[7][6]) == 1,
+  #   "ups.beeper_status": int(res[7][7]) == 1, # 是否正在蜂鸣报警
+  # }
   return {
     "input.voltage": float(res[0]),
     "input.voltage_fault": float(res[1]),
@@ -80,14 +98,14 @@ def get_status(device):
     "battery.level": float(battery_level),
     "ups.load": float(res[3]),
     "ups.temperature": res[6],
-    "ups.utility_fail": int(res[7][0]) == 1,  # 外部供电是否中断是
-    "ups.battery_low": int(res[7][1]) == 1,   # 电池是否低电压 快没电了
-    "ups.bypass": int(res[7][2]) == 0,        # 是否处于旁路模式
-    "ups.failed": int(res[7][3]) == 1,
-    "ups.type": int(res[7][4]) == 1,          # 好像永远是1
-    "ups.test_in_progress": int(res[7][5]) == 1, # 是否正在测试中
-    "ups.shutdown_active": int(res[7][6]) == 1,
-    "ups.beeper_status": int(res[7][7]) == 1, # 是否正在蜂鸣报警
+    "ups.utility_fail": int(res[7][0]),  # 外部供电是否中断是
+    "ups.battery_low": int(res[7][1]),   # 电池是否低电压 快没电了
+    "ups.bypass": int(res[7][2]),        # 是否处于旁路模式
+    "ups.failed": int(res[7][3]),
+    "ups.type": int(res[7][4]),          # 好像永远是1
+    "ups.test_in_progress": int(res[7][5]), # 是否正在测试中
+    "ups.shutdown_active": int(res[7][6]),
+    "ups.beeper_status": int(res[7][7]), # 是否正在蜂鸣报警
   }
 
 def get_battery_level(device):

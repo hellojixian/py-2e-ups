@@ -1,0 +1,14 @@
+pushgateway:
+  target: 10.0.0.1:9091
+  job: ups
+devices:
+  - vendor_id: 0x0001
+    product_id: 0x0001
+    label: ups1
+    hosts:
+      - ip: 192.168.0.190
+        username: jixian
+        password:
+      - ip: ups-monitor-1
+        username: jixian
+        password:
