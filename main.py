@@ -47,18 +47,18 @@ def push(status: dict, device: dict):
         g = Gauge(k.replace('.', '_'), k, ['device'], registry=registry)
         g.labels(device=device['label']).set(v)
     push_to_gateway(config.pushgateway['target'], job=config.pushgateway['job'], registry=registry)
-    print('push')
+    print(datetime.now(), device['label'], status)
 
 
 def halt(host):
     command = '' if host['password'] is None else 'sshpass -p "{password}" '
     command += 'ssh {username}@{ip} sudo shutdown -h now'
     print(command.format(**host))
-    subprocess.run(command, shell=True, check=True)
+    # subprocess.run(command, shell=True, check=True)
 
 def main():
     sched = BlockingScheduler()
-    sched.add_job(job, 'interval', seconds=3, id='ups_job')
+    sched.add_job(job, 'interval', seconds=15, id='ups_job')
     sched.start() 
 
 if __name__ == '__main__':
