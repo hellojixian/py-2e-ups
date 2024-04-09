@@ -52,9 +52,9 @@ def push(status: dict, device: dict):
 
 def halt(host):
     command = '' if host['password'] is None else 'sshpass -p "{password}" '
-    command += 'ssh {username}@{ip} sudo shutdown -h now'
+    command += 'ssh {username}@{ip} shutdown -h now'
     print(command.format(**host))
-    # subprocess.run(command, shell=True, check=True)
+    subprocess.run(command, shell=True, check=True)
 
 def main():
     sched = BlockingScheduler()
