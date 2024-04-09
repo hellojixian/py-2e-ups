@@ -88,7 +88,7 @@ def get_status(device):
     "ups.temperature": res[6],
     "ups.utility_fail": int(res[7][0]),  # 外部供电是否中断是
     "ups.battery_low": int(res[7][1]),   # 电池是否低电压 快没电了
-    "ups.bypass": 0 if int(res[7][2]) == 1 else 0,        # 是否处于旁路模式
+    "ups.bypass": 0 if int(res[7][2]) == 1 else 1,        # 是否处于旁路模式
     "ups.failed": int(res[7][3]),
     "ups.type": int(res[7][4]),          # 好像永远是1
     "ups.test_in_progress": int(res[7][5]), # 是否正在测试中
