@@ -23,9 +23,9 @@ def push(status: dict, device: dict):
     config = getConfig()
     registry = CollectorRegistry()
     for k, v in status.items():
-        g = Gauge(k.replace('.', '_'), k, ['device'], registry=registry)
-        g.labels(device=device['label']).set(v)
-    push_to_gateway(config.pushgateway['target'], job=config.pushgateway['job'], instance=device['label'], registry=registry)
+        g = Gauge(k.replace('.', '_'), k, registry=registry)
+    push_to_gateway(instance=)
+    push_to_gateway(config.pushgateway['target'], job=config.pushgateway['job']+'_'+device['label'], registry=registry)
     print(datetime.now(), device['label'], status)
 
 
