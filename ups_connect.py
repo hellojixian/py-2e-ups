@@ -67,14 +67,17 @@ def init_device(device):
     r = _run_cmd(device, cmd)
   return
 
+def is_empty_status(status):
+  return all(status[i] == '0' for i in range(7)) and status[7] == '00000000'
+
 def get_status(device):
   res = _run_cmd(device, [0x80, 0x06, 0x0303, 0x0409, 0x0066])
   res = res[1:].split(' ')
 
-  while float(res[2]) == 0.0:
+  while is_empty_status(res):
+    time.sleep(1)
     res = _run_cmd(device, [0x80, 0x06, 0x0303, 0x0409, 0x0066])
     res = res[1:].split(' ')
-    time.sleep(1)
 
   battery_level = get_battery_level(device)
   return {
