@@ -15,7 +15,7 @@ def job():
             dev = get_device()
             status = get_status(dev)
             push(status, device)
-            if status['ups.utility_fail'] > 0 and status['battery.level'] < 10:
+            if status['ups.utility_fail'] > 0 and status['battery.level'] < 35:
                 for host in device['hosts']:
                     halt(host)
         except Exception as e:
@@ -41,7 +41,7 @@ def halt(host):
 
 
 def main():
-    logging.basicConfig(filename='ups.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
+    # logging.basicConfig(filename='ups.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
     logging.info('start')
     
     sched = BlockingScheduler()
